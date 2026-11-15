@@ -95,12 +95,34 @@
             .then(response => response.json())
             .then(data => {
                 membersData = data;
+                checkExistingSession();
             })
             .catch(error => {
                 console.error('Error loading members:', error);
                 // Error message suppressed as requested.
                 document.getElementById('loginError').classList.remove('hidden');
             });
+
+        // Check 1-hour session on page load
+        const SESSION_DURATION = 60 * 60 * 1000; // 1 hour in ms
+        
+        function checkExistingSession() {
+            const loginTime = localStorage.getItem('church_login_time');
+            if (loginTime) {
+                const elapsed = Date.now() - parseInt(loginTime, 10);
+                if (elapsed < SESSION_DURATION) {
+                    // Session still valid, bypass login
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('appContent').classList.remove('hidden');
+                    if (membersData.length > 0) {
+                        renderDirectory(membersData);
+                    }
+                } else {
+                    // Expired, clear it
+                    localStorage.removeItem('church_login_time');
+                }
+            }
+        }
 
         // Handle Login
         document.getElementById('loginBtn').addEventListener('click', () => {
@@ -121,6 +143,9 @@
             );
 
             if (isAuthorized) {
+                // Save login timestamp
+                localStorage.setItem('church_login_time', Date.now().toString());
+                
                 // Hide login, show app
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appContent').classList.remove('hidden');
