@@ -26,7 +26,6 @@
             margin: 0 auto;
             display: block;
         }
-        /* Hide scrollbar for a cleaner mobile look but keep functionality */
         ::-webkit-scrollbar {
             width: 0px;
             background: transparent;
@@ -35,42 +34,107 @@
 </head>
 <body class="pb-12">
 
-    <!-- Header Banner -->
-    <header class="banner-container shadow-md">
-        <img src="banner.png" alt="St. Mary's Jacobite Syrian Church Banner" class="banner-image">
-    </header>
-
-    <main class="max-w-2xl mx-auto px-4 mt-2">
-        <!-- Sticky Search Bar for Mobile -->
-        <div class="sticky top-0 z-10 bg-[#f3f4f6] pt-4 pb-3">
-            <div class="relative shadow-sm rounded-xl">
-                <input type="text" id="searchInput" placeholder="Search name or family..." 
-                       class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
-                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="flex flex-col items-center justify-center min-h-screen px-4 bg-white">
+        <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+            <!-- Banner added to Member Access page, Member Access header removed -->
+            <div class="mb-6 -mx-6 -mt-6 rounded-t-2xl overflow-hidden border-b-4 border-blue-900">
+                <img src="banner.png" alt="St. Mary's Jacobite Syrian Church Banner" class="w-full h-auto block">
+            </div>
+            <div class="text-center mb-6 px-2">
+                <p class="text-sm text-gray-600 font-medium">Please verify your details to view the directory</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <input type="text" id="loginName" placeholder="e.g. Basil" 
+                           class="w-full p-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="loginPhone" placeholder="10-digit mobile number" 
+                           class="w-full p-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
+                </div>
+                <button id="loginBtn" class="w-full bg-blue-900 text-white font-bold text-lg p-3.5 rounded-xl active:bg-blue-800 transition-colors shadow-md mt-2">
+                    Access Directory
+                </button>
+                <p id="loginError" class="text-red-600 text-sm mt-3 hidden text-center font-medium bg-red-50 p-2 rounded-lg">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Details not found in the directory.
+                </p>
             </div>
         </div>
+    </div>
 
-        <!-- Directory List -->
-        <div id="directoryList" class="flex flex-col gap-3 mt-1">
-            <!-- Cards will be injected here by JS -->
-        </div>
-    </main>
+    <!-- Main App Content (Hidden Initially) -->
+    <div id="appContent" class="hidden">
+        <header class="banner-container shadow-md">
+            <img src="banner.png" alt="St. Mary's Jacobite Syrian Church Banner" class="banner-image">
+        </header>
+
+        <main class="max-w-2xl mx-auto px-4 mt-2">
+            <div class="sticky top-0 z-10 bg-[#f3f4f6] pt-4 pb-3">
+                <div class="relative shadow-sm rounded-xl">
+                    <input type="text" id="searchInput" placeholder="Search name or family..." 
+                           class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                </div>
+            </div>
+
+            <div id="directoryList" class="flex flex-col gap-3 mt-1">
+                <!-- Cards injected here -->
+            </div>
+        </main>
+    </div>
 
     <script>
         let membersData = [];
 
-        // Fetch data from external JSON file (Best practice for Git Hosting)
+        // Fetch data immediately so it's ready when they click login
         fetch('members_data.json')
             .then(response => response.json())
             .then(data => {
                 membersData = data;
-                renderDirectory(membersData);
             })
             .catch(error => {
                 console.error('Error loading members:', error);
-                document.getElementById('directoryList').innerHTML = '<div class="text-center text-red-500 py-10">Error loading directory data. Make sure members_data.json is uploaded to your repository.</div>';
+                // Error message suppressed as requested.
+                document.getElementById('loginError').classList.remove('hidden');
             });
 
+        // Handle Login
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const nameInput = document.getElementById('loginName').value.trim().toLowerCase();
+            const phoneInput = document.getElementById('loginPhone').value.trim();
+            
+            if (!nameInput || !phoneInput) {
+                const err = document.getElementById('loginError');
+                err.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Please enter both name and phone.';
+                err.classList.remove('hidden');
+                return;
+            }
+
+            // Check authorization: partial name match AND exact phone match
+            const isAuthorized = membersData.some(m => 
+                m.name.toLowerCase().includes(nameInput) && 
+                m.phone.trim() === phoneInput
+            );
+
+            if (isAuthorized) {
+                // Hide login, show app
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+                // Render the directory
+                renderDirectory(membersData);
+            } else {
+                // Show error
+                const err = document.getElementById('loginError');
+                err.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Details not found in the directory.';
+                err.classList.remove('hidden');
+            }
+        });
+
+        // Directory Rendering Logic
         function renderDirectory(members) {
             const container = document.getElementById('directoryList');
             container.innerHTML = '';
