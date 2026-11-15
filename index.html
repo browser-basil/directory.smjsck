@@ -103,8 +103,8 @@
                 document.getElementById('loginError').classList.remove('hidden');
             });
 
-        // Check 1-hour session on page load
-        const SESSION_DURATION = 60 * 60 * 1000; // 1 hour in ms
+        // Check active session on page load
+        const SESSION_DURATION = 12 * 60 * 60 * 1000; // 1 hour in ms
         
         function checkExistingSession() {
             const loginTime = localStorage.getItem('church_login_time');
