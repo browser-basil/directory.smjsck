@@ -74,10 +74,18 @@
 
         <main class="max-w-2xl mx-auto px-4 mt-2">
             <div class="sticky top-0 z-10 bg-[#f3f4f6] pt-4 pb-3">
-                <div class="relative shadow-sm rounded-xl">
-                    <input type="text" id="searchInput" placeholder="Search name or family..." 
-                           class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
-                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+                <div class="flex items-center gap-2 max-w-lg mx-auto">
+                    <div class="relative shadow-sm rounded-xl flex-1">
+                        <input type="text" id="searchInput" placeholder="Search name or family..." 
+                               class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-base outline-none transition-all bg-white">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-base"></i>
+                    </div>
+                    <button id="resetSearchBtn" title="Reset Search" class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-50 active:bg-gray-100 flex-shrink-0 transition-colors">
+                        <i class="fas fa-redo-alt text-lg"></i>
+                    </button>
+                    <button id="logoutBtnApp" title="Logout" class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-300 text-red-600 flex items-center justify-center hover:bg-red-50 active:bg-red-100 flex-shrink-0 transition-colors">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </button>
                 </div>
             </div>
 
@@ -103,8 +111,8 @@
                 document.getElementById('loginError').classList.remove('hidden');
             });
 
-        // Check active session on page load
-        const SESSION_DURATION = 12 * 60 * 60 * 1000; // 1 hour in ms
+        // Check 1-hour session on page load
+        const SESSION_DURATION = 12 * 60 * 60 * 1000; // 12 hours in ms
         
         function checkExistingSession() {
             const loginTime = localStorage.getItem('church_login_time');
@@ -207,6 +215,22 @@
                 m.family.toLowerCase().includes(term)
             );
             renderDirectory(filtered);
+        });
+
+        // Reset Search functionality
+        document.getElementById('resetSearchBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            renderDirectory(membersData);
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtnApp').addEventListener('click', () => {
+            localStorage.removeItem('church_login_time');
+            document.getElementById('appContent').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginName').value = '';
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginError').classList.add('hidden');
         });
     </script>
 </body>
