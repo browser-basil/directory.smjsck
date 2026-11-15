@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>St. Mary's Jacobite Syrian Church Directory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background-color: #f3f4f6; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .banner-container {
+            background-color: white;
+            width: 100%;
+            border-bottom: 4px solid #1e3a8a;
+            text-align: center;
+            padding: 0;
+        }
+        .banner-image {
+            width: 100%;
+            max-width: 1000px;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+        }
+        /* Hide scrollbar for a cleaner mobile look but keep functionality */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="pb-12">
+
+    <!-- Header Banner -->
+    <header class="banner-container shadow-md">
+        <img src="banner.png" alt="St. Mary's Jacobite Syrian Church Banner" class="banner-image">
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 mt-2">
+        <!-- Sticky Search Bar for Mobile -->
+        <div class="sticky top-0 z-10 bg-[#f3f4f6] pt-4 pb-3">
+            <div class="relative shadow-sm rounded-xl">
+                <input type="text" id="searchInput" placeholder="Search name or family..." 
+                       class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg outline-none transition-all">
+                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
+            </div>
+        </div>
+
+        <!-- Directory List -->
+        <div id="directoryList" class="flex flex-col gap-3 mt-1">
+            <!-- Cards will be injected here by JS -->
+        </div>
+    </main>
+
+    <script>
+        let membersData = [];
+
+        // Fetch data from external JSON file (Best practice for Git Hosting)
+        fetch('members_data.json')
+            .then(response => response.json())
+            .then(data => {
+                membersData = data;
+                renderDirectory(membersData);
+            })
+            .catch(error => {
+                console.error('Error loading members:', error);
+                document.getElementById('directoryList').innerHTML = '<div class="text-center text-red-500 py-10">Error loading directory data. Make sure members_data.json is uploaded to your repository.</div>';
+            });
+
+        function renderDirectory(members) {
+            const container = document.getElementById('directoryList');
+            container.innerHTML = '';
+
+            if (members.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-10"><i class="fas fa-search text-3xl mb-3 text-gray-300"></i><p>No members found.</p></div>';
+                return;
+            }
+
+            members.forEach(member => {
+                let waNumber = member.phone;
+                if (!waNumber.startsWith('91')) {
+                    waNumber = '91' + waNumber;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between active:bg-gray-50 transition-colors';
+                
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0 pr-3">
+                        <h2 class="text-lg font-bold text-gray-900 leading-tight break-words">${member.name}</h2>
+                        <p class="text-sm text-gray-500 mt-1 flex items-center truncate">
+                            <i class="fas fa-home w-4 text-center mr-1.5 opacity-70"></i> 
+                            <span class="truncate">${member.family}</span>
+                        </p>
+                    </div>
+                    <div class="flex gap-3 flex-shrink-0">
+                        <a href="tel:${member.phone}" class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center active:bg-blue-200 transition-colors shadow-sm border border-blue-100" aria-label="Call ${member.name}">
+                            <i class="fas fa-phone-alt text-xl"></i>
+                        </a>
+                        <a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center active:bg-green-200 transition-colors shadow-sm border border-green-100" aria-label="WhatsApp ${member.name}">
+                            <i class="fab fa-whatsapp text-2xl"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = membersData.filter(m => 
+                m.name.toLowerCase().includes(term) || 
+                m.family.toLowerCase().includes(term)
+            );
+            renderDirectory(filtered);
+        });
+    </script>
+</body>
+</html>
