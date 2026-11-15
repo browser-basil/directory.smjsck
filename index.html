@@ -60,7 +60,7 @@
                     Access Directory
                 </button>
                 <p id="loginError" class="text-red-600 text-sm mt-3 hidden text-center font-medium bg-red-50 p-2 rounded-lg">
-                    <i class="fas fa-exclamation-circle mr-1"></i> Details not found in the directory.
+                    <i class="fas fa-exclamation-circle mr-1"></i> You are not authorized to access the directory. Please contact church office.
                 </p>
             </div>
         </div>
@@ -129,7 +129,7 @@
             } else {
                 // Show error
                 const err = document.getElementById('loginError');
-                err.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Details not found in the directory.';
+                err.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> You are not authorized to access the directory. Please contact church office.';
                 err.classList.remove('hidden');
             }
         });
